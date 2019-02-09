@@ -1,36 +1,34 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
 import os
-
-
-# In[2]:
-
-
+import numpy as np
 os.listdir()
+pathEn = "en"
+import joblib
 
+import resource
 
-# In[3]:
+def set_memory_limit(memory_kilobytes):
+    # ru_maxrss: peak memory usage (bytes on OS X, kilobytes on Linux)
+    usage_kilobytes = lambda: resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    rlimit_increment = 1024 * 1024
+    resource.setrlimit(resource.RLIMIT_DATA, (rlimit_increment, resource.RLIM_INFINITY))
 
+    memory_hog = []
 
-pathEn = "/Users/kram/Downloads/botOrNot-en_es/en"
+    while usage_kilobytes() < memory_kilobytes:
+        try:
+            for x in range(100):
+                memory_hog.append('x' * 400)
+        except MemoryError as err:
+            rlimit = resource.getrlimit(resource.RLIMIT_DATA)[0] + rlimit_increment
+            resource.setrlimit(resource.RLIMIT_DATA, (rlimit, resource.RLIM_INFINITY))
 
+set_memory_limit(15000 * 1024)  # 50 mb
 
 # First of all, we will create a procedure to be tested on a single file.
 # 
 # After this first step will be completed, we will extend this procedure to create a complete dataframe
 
-# In[4]:
-
-
-testfile = "/Users/kram/Downloads/botOrNot-en_es/en/1a5b808546838869bc39cebdbad951e3.xml"
-
-
-# In[5]:
-
+testfile = "en/1a5b808546838869bc39cebdbad951e3.xml"
 
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -48,38 +46,9 @@ def iter_docs(author):
 xml_data = open(testfile, "r") # Opening the text file
 etree = ET.parse(xml_data) # Create an ElementTree object 
 df = pd.DataFrame(list(iter_docs(etree.getroot()))) #Append the info to a pandas dataframe
-
-
-# In[6]:
-
-
 df.head(10)
-
-
-# In[7]:
-
-
 df['data'][0]
-
-
-# In[8]:
-
-
-# Getting ID to insert in the dataframe
-
 filename = testfile.split("/")[-1].split(".")[0]
-
-
-# In[9]:
-
-
-filename
-
-
-# We can now try to extend the procedure to the full directory.
-
-# In[10]:
-
 
 import time
 
@@ -113,114 +82,44 @@ for root, dirs, files in os.walk(pathEn):
 end = time.time()
 print("Total running time is", end - start)
 
-
-# In[11]:
-
-
 dataEn.head(10)
 
-
-# In[12]:
-
-
 dataEn['data'][0]
-
-
-# In[13]:
-
-
 dataEn.describe()
 
-
-# Now that we have merged the IDs with the data, we can create another dataframe with the labels and then merge them using the ID as key
-
-# In[14]:
-
-
-pathToLabels = "/Users/kram/Downloads/botOrNot-en_es/en/truth.txt"
-
-
-# In[15]:
-
+pathToLabels = "en/truth.txt"
 
 target = pd.read_csv(pathToLabels, sep=":::")
 target.columns=['ID', 'botOrHuman', 'sex'] 
-
-
-# In[16]:
-
-
 target.head(10)
-
-
-# In[17]:
-
-
 target.describe()
-
-
-# We can now proceed with the concatenation of the dataframes for the English language
-
-# In[18]:
-
-
 mergedEnData = pd.merge(dataEn, target, on='ID')
-
-
-# In[19]:
-
-
 mergedEnData.head(10)
-
-
-# In[20]:
-
-
 mergedEnData.describe()
 
 
 # # Deep Learning - CNN?
-
-# In[21]:
-
-
 '''Creo la litsa degli ID, delle classi e dei tweets pr ogni ID'''
+listaIds = [ ]
+listaClasses = [ ]
+matrixTweets = [ ]
 
-listaIds =[]
-listaClasses = []
-matrixTweets = []
-
-for index, x in mergedEnData.iterrows():
-    id = x['ID']
+for index , x in mergedEnData.iterrows ( ):
+    id = x[ 'ID' ]
     if id not in listaIds:
-        newList = list()
-        newList.append(x[1])
-        matrixTweets.append(newList)
-        listaIds.append(id)
-        listaClasses.append(x[3])
+        newList = list ( )
+        newList.append ( x[ 1 ] )
+        matrixTweets.append ( newList )
+        listaIds.append ( id )
+        listaClasses.append ( x[ 3 ] )
     else:
-        ls = matrixTweets[listaIds.index(id)]
-        ls.append(x[1])
-        matrixTweets[listaIds.index(id)] = ls
-        
-print(len(listaIds))
+        ls = matrixTweets[ listaIds.index ( id ) ]
+        ls.append ( x[ 1 ] )
+        matrixTweets[ listaIds.index ( id ) ] = ls
 
-
-# In[41]:
-
+print ( len ( listaIds ) )
 
 '''Trasformo le entità, lascio le faccine, levo le stopword e se serve agli embeddings lemmatizzo'''
-
-
-# In[42]:
-
-
-import sys
-get_ipython().system('{sys.executable} -m pip install ekphrasis')
-
-
-# In[43]:
-
 
 from ekphrasis.dicts.emoticons import emoticons
 from ekphrasis.classes.preprocessor import TextPreProcessor
@@ -240,115 +139,83 @@ text_processor = TextPreProcessor (
     dicts=[ emoticons ]
 )
 
-
-# In[44]:
-
-
-'''Transform sentences to word embeddings'''
-
-
-# In[45]:
-
-
-import gensim
-
-
-# In[46]:
-
-
-google_300 = gensim.models.KeyedVectors.load_word2vec_format( "/Users/kram/Downloads/botOrNot-en_es/google_w2v_300.bin" , binary=True )
-
-
-# In[47]:
-
-
-'''Trasformo le frasi'''
-
-
-# In[104]:
-
-
-from nltk.tokenize import TweetTokenizer as TweetTokenizer
-from nltk.corpus import stopwords
-import random as rn
-stop_words = set(stopwords.words('english'))
-
-# matrixTweetsEmb = []
+# import gensim
+# google_300 = gensim.models.KeyedVectors.load_word2vec_format( "google_w2v_300.bin" , binary=True )
+#
+# from nltk.tokenize import TweetTokenizer as TweetTokenizer
+# from nltk.corpus import stopwords
+# import random as rn
+# import nltk
+# nltk.download('stopwords')
+# stop_words = set ( stopwords.words ( 'english' ) )
+# numUs = len(listaIds)
+# i = 0
+# matrixTweetsEmb = [ ]
 # for tweetsUser in matrixTweets:
-#     embTweetsUser = []
+#     if(i % 100) == 0:
+#         print(i)
+#     embTweetsUser = [ ]
 #
 #     for tweet in tweetsUser:
-#         embTweetUser = np.zeros([50,300])
-#         #Preprocesso
-#         tokList = text_processor.pre_process_doc(tweet)
-#         #Rimuovo le stopwords
-#         tokList = [w for w in tokList if not w in stop_words]
-#         #trovo l'embedding
+#         embTweetUser = np.zeros ( [ 50 , 300 ] )
+#         # Preprocesso
+#         tokList = text_processor.pre_process_doc ( tweet )
+#         # Rimuovo le stopwords
+#         tokList = [ w for w in tokList if not w in stop_words ]
+#         # trovo l'embedding
 #         numTok = 0;
-#         for token in tokList[0:50]:
-#             g_vec =[]
+#         for token in tokList[ 0:50 ]:
+#             g_vec = [ ]
 #             is_in_model = False
 #             if token in google_300.vocab.keys ( ):
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec(token)
+#                 g_vec = google_300.word_vec ( token )
 #             elif token == "<number>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec( "number")
+#                 g_vec = google_300.word_vec ( "number" )
 #             elif token == "<percent>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("percent")
+#                 g_vec = google_300.word_vec ( "percent" )
 #             elif token == "<money>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("money")
+#                 g_vec = google_300.word_vec ( "money" )
 #             elif token == "<email>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("email")
+#                 g_vec = google_300.word_vec ( "email" )
 #             elif token == "<phone>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("phone")
+#                 g_vec = google_300.word_vec ( "phone" )
 #             elif token == "<time>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("time")
+#                 g_vec = google_300.word_vec ( "time" )
 #             elif token == "<date>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("date")
+#                 g_vec = google_300.word_vec ( "date" )
 #             elif token == "<url>":
 #                 is_in_model = True
-#                 g_vec = google_300.word_vec("url")
+#                 g_vec = google_300.word_vec ( "url" )
 #             elif not is_in_model:
 #                 max = len ( google_300.vocab.keys ( ) ) - 1
 #                 index = rn.randint ( 0 , max )
 #                 word = google_300.index2word[ index ]
-#                 g_vec = google_300.word_vec( word )
+#                 g_vec = google_300.word_vec ( word )
 #
-#             embTweetUser[numTok] = np.array(g_vec)
+#             embTweetUser[ numTok ] = np.array ( g_vec )
 #             numTok += 1
-#         embTweetsUser.append(np.array(embTweetUser))
+#         embTweetsUser.append ( np.array ( embTweetUser ) )
 #
+#     matrixTweetsEmb.append ( np.array ( embTweetsUser ) )
+#     i += 1
 #
-#
-#     matrixTweetsEmb.append(np.array(embTweetsUser))
-#
-#
-# # In[105]:
-#
-#
-# '''Num Utenti x Num Tweets x Num MaxTokens x Dim Embedding'''
 # import numpy as np
 # matrixTweetsEmb = np.array(matrixTweetsEmb)
 # print(matrixTweetsEmb.shape)
 
-
-# In[22]:
-
-
-get_ipython().system('{sys.executable} -m pip install joblib')
+#get_ipython().system('{sys.executable} -m pip install joblib')
 import joblib
 #joblib.dump(matrixTweetsEmb,'matrixTweetsEmb_4177_100_50_300.dump')
-matrixTweetsEmb = joblib.load('matrixTweetsEmb_4177_100_50_300.dump')
+matrixTweetsEmb = joblib.load('matrixTweetsEmb_ALT.dump')
 
-
-# In[23]:
 
 
 from keras.layers import *
@@ -367,66 +234,16 @@ model.add(Dense(100, activation="tanh"))
 model.add(Dense(2, activation="softmax"))
 model.summary()
 
-
-# In[24]:
-
-
-get_ipython().system('{sys.executable} -m pip install category_encoders')
+#get_ipython().system('{sys.executable} -m pip install category_encoders')
 import category_encoders as ce
 le =  ce.OneHotEncoder(return_df=False, impute_missing=False, handle_unknown="ignore")
 training_classes = le.fit_transform(listaClasses)
 print(le.category_mapping)
 
-
-# In[27]:
-
-
-# model.compile ( loss='categorical_crossentropy' , optimizer='adam' , metrics=['accuracy'] )
-#
-# history = model.fit(matrixTweetsEmb,training_classes,64,15,
-#                       validation_split= 0.15 ,
-#                       verbose=1)
-#
-#
-# # In[31]:
-#
-#
-# import matplotlib.pyplot as plt
-# print(history.history.keys())
-# get_ipython().run_line_magic('matplotlib', 'qt')
-# # summarize history for accuracy
-# plt.plot(history.history['acc'])
-# plt.plot(history.history['val_acc'])
-# plt.title('model accuracy')
-# plt.ylabel('accuracy')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.show()
-# # summarize history for loss
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title('model loss')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.show()
-#
-#
-# # In[29]:
-#
-#
-# model.save('01.CNN_100x50x300D_google.h5')
-#
-
-# In[32]:
-
-
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(matrixTweetsEmb,training_classes, test_size=0.15, random_state=891)
+X_train, X_test, y_train, y_test = train_test_split(matrixTweetsEmb,listaClasses, test_size=0.15, random_state=891)
 
-
-# In[40]:
-
+y_test = le.transform(y_test)
 
 from  sklearn.metrics  import classification_report
 from keras.callbacks import Callback
@@ -438,38 +255,67 @@ class MyCallBack(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         current = logs.get('val_loss')
-        if current < 0.014:
-            self.model.stop_training = True
-        
-        predicted = self.model.predict_classes(X_test)
-        print(classification_report(y_test,predicted))
-        
+        # if current < 0.014:
+        #     self.model.stop_training = True
+
+        predicted = model.predict ( X_test )
+
+        test = [ '0' ] * len ( X_test )
+        i = 0
+        for cl in predicted:
+            test[ i ] = str ( np.argmax ( cl ) )
+            i += 1
+
+        test_lab = [ '0' ] * len ( X_test )
+        i = 0
+        for cl in y_test:
+            test_lab[ i ] = str ( np.argmax ( cl ) )
+            i += 1
+
+        print ( len ( X_test ) )
+        print ( classification_report ( test , test_lab ) )
         
 callbacks_list = [
     MyCallBack(verbose=1)
 ]
 
-
-# In[ ]:
-
-
 model.compile ( loss='categorical_crossentropy' , optimizer='adam' , metrics=['accuracy'] )
 
 from sklearn.model_selection import train_test_split, StratifiedKFold
-folds = list(StratifiedKFold(n_splits=k, shuffle=True, random_state=7654).split(matrixTweetsEmb,training_classes))
 
+
+
+folds = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=7654).split(X_train,y_train))
+
+y_train = le.transform(y_train)
 for j , (train_idx , val_idx) in enumerate ( folds ):
     print ( '\nFold ' , j )
-    X_train = matrixTweetsEmb[ train_idx ]
-    y_train = training_classes[ train_idx ]
-    X_test = matrixTweetsEmb[ val_idx ]
-    y_test = training_classes[ val_idx ]
+    X_tr = X_train[ train_idx ]
+    y_tr = y_train[ train_idx ]
+    X_te = X_train[ val_idx ]
+    y_te = y_train[ val_idx ]
 
-    history = model.fit(X_train,y_train,64,15,
-                          validation_data= (X_test,y_test) ,
+    history = model.fit(X_tr,y_tr,64,5,
+                          validation_data= (X_te,y_te) ,
                           callbacks=callbacks_list,
                           verbose=1)
 
 
+predicted = model.predict ( X_test )
+
+test = [ '0' ] * len ( X_test )
+i = 0
+for cl in predicted:
+    test[ i ] = str ( np.argmax ( cl ) )
+    i += 1
+
+test_lab = [ '0' ] * len ( X_test )
+i = 0
+for cl in y_test:
+    test_lab[ i ] = str ( np.argmax ( cl ) )
+    i += 1
+
+print ( len ( X_test ) )
+print ( classification_report ( test , test_lab ) )
 
 model.save('02.CNN_100x50x300D_google.h5')
