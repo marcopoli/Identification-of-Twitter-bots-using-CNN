@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from sklearn.metrics import accuracy_score
 os.listdir()
 pathEn = "en"
 import joblib
@@ -273,6 +274,8 @@ class MyCallBack(Callback):
             i += 1
 
         print ( len ( X_test ) )
+        acc = accuracy_score ( test , test_lab )
+        print ( "Accuracy:" , acc )
         print ( classification_report ( test , test_lab ) )
         
 callbacks_list = [
@@ -286,7 +289,10 @@ from sklearn.model_selection import train_test_split, StratifiedKFold
 
 
 folds = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=7654).split(X_train,y_train))
-
+X_tr = []
+y_tr = []
+X_te = []
+y_te = []
 y_train = le.transform(y_train)
 for j , (train_idx , val_idx) in enumerate ( folds ):
     print ( '\nFold ' , j )
@@ -316,6 +322,8 @@ for cl in y_test:
     i += 1
 
 print ( len ( X_test ) )
+acc = accuracy_score(test, test_lab)
+print("Accuracy:", acc)
 print ( classification_report ( test , test_lab ) )
 
 model.save('02.CNN_100x50x300D_google.h5')
