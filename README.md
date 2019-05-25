@@ -2,9 +2,7 @@
 
 *Marco Polignano, Marco Giuseppe de Pinto, Pasquale Lops, and Giovanni Semeraro* 
 
-*University of Bari ALDO MORO*
-
-*via E. Orabona 4, 70125, Bari, Italy*
+*University of Bari ALDO MORO - Via E. Orabona 4, 70125, Bari, Italy*
 
 *marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it, pasquale.lops@uniba.it, giovanni.semeraro@uniba.it*
 
@@ -16,6 +14,7 @@ The number of accounts that autonomously publish contents on the web is growing 
 
 - `runner.py` has been used to run and submit the model to the competition
 - `female_es.txt` and `male_es.txt` contain additional tweets that have been scraped using `datagen.py` and `datagen_es.py` to create additional training data.
+- The `genHuman` folder contains the tweets created with the `datagen` files.
 - `malefemale.py` and `malefemale_es.py` create/train the model to distinguish between male and female tweets (if human and not bot).
 - `botnotbot.py` and `botnotbot_es.py` create/train the model to distinguish between human and bot tweets.
 
