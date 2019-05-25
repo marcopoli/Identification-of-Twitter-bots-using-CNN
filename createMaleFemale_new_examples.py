@@ -1,11 +1,14 @@
 import os
-os.listdir()
-pathEn = "/Users/kram/Downloads/botOrNot-en_es/en"
 import pandas as pd
+import numpy as np
 #import xml.etree.ElementTree as ET
 from lxml import etree as ET
 import io
 import random as rm
+
+os.listdir()
+pathEn = "/Users/kram/Downloads/botOrNot-en_es/en"
+
 def iter_docs(author):
     '''This function extracts the text and the language from the XML'''
     author_attr = author.attrib
@@ -17,12 +20,10 @@ def iter_docs(author):
 
 rm.seed = 75494
 
-
 #xml_data = open(testfile, "r") # Opening the text file
 #etree = ET.parse(xml_data) # Create an ElementTree object
 #df = pd.DataFrame(list(iter_docs(etree.getroot()))) #Append the info to a pandas dataframe
 
-import numpy as np
 tweets = pd.read_csv('/Volumes/MacPassport/PycharmProjects/botOrNot/tweets_es.txt',delimiter="\t",header=None,names= ['id','tweet','gender'])
 mens = tweets[tweets.gender == "men"].tweet.tolist()
 mensIds = tweets[tweets.gender == "men"].id.tolist()

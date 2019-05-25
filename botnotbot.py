@@ -1,16 +1,35 @@
 import os
+import io
+import nltk
+import time
+import gensim
+import joblib
+import resource
+import random as rn
 import numpy as np
+import pandas as pd
+import tensorflow as tf
+from keras.layers import *
+from keras.models import Sequential
+from keras import backend as K
+from nltk.corpus import stopwords
+from keras.callbacks import Callback
+import xml.etree.ElementTree as ET
+from ekphrasis.dicts.emoticons import emoticons
+from ekphrasis.classes.preprocessor import TextPreProcessor
+from ekphrasis.classes.tokenizer import SocialTokenizer
 from sklearn.metrics import accuracy_score
-import pickle
-
+from sklearn.model_selection import StratifiedKFold
+from  sklearn.metrics  import classification_report
+from nltk.tokenize import TweetTokenizer as TweetTokenizer
+from sklearn.model_selection import train_test_split
 
 os.listdir()
 pathEn = "en"
-import joblib
-#matrixTweetsEmb = joblib.load('matrixTweetsEmb_ALT.dump')
-#listaClasses = joblib.load('listaClasses.dump')
+# matrixTweetsEmb = joblib.load('matrixTweetsEmb_ALT.dump')
+# listaClasses = joblib.load('listaClasses.dump')
 listaClasses = []
-import resource
+
 
 def set_memory_limit(memory_kilobytes):
     # ru_maxrss: peak memory usage (bytes on OS X, kilobytes on Linux)
@@ -28,17 +47,12 @@ def set_memory_limit(memory_kilobytes):
             rlimit = resource.getrlimit(resource.RLIMIT_DATA)[0] + rlimit_increment
             resource.setrlimit(resource.RLIMIT_DATA, (rlimit, resource.RLIM_INFINITY))
 
-#set_memory_limit(150000 * 1024)
+# set_memory_limit(150000 * 1024)
 
 # First of all, we will create a procedure to be tested on a single file.
-#
 # After this first step will be completed, we will extend this procedure to create a complete dataframe
 
 testfile = "en/1a5b808546838869bc39cebdbad951e3.xml"
-
-import pandas as pd
-import xml.etree.ElementTree as ET
-import io
 
 def iter_docs(author):
     '''This function extracts the text and the language from the XML'''
@@ -51,8 +65,6 @@ def iter_docs(author):
 
 xml_data = open(testfile, "r") # Opening the text file
 etree = ET.parse(xml_data) # Create an ElementTree object
-
-import time
 
 # Creating empty dataframe
 dataEn = pd.DataFrame()
@@ -115,10 +127,6 @@ print ( len ( listaIds ) )
 
 '''Trasformo le entità, lascio le faccine, levo le stopword e se serve agli embeddings lemmatizzo'''
 
-from ekphrasis.dicts.emoticons import emoticons
-from ekphrasis.classes.preprocessor import TextPreProcessor
-from ekphrasis.classes.tokenizer import SocialTokenizer
-
 text_processor = TextPreProcessor (
     # terms that will be normalized
     normalize=[ 'email' , 'percent' , 'money' , 'phone' ,
@@ -133,15 +141,10 @@ text_processor = TextPreProcessor (
     dicts=[ emoticons ]
 )
 
-import gensim
-#google_300 = gensim.models.KeyedVectors.load_word2vec_format( "google_w2v_300.bin" , binary=True )
+# google_300 = gensim.models.KeyedVectors.load_word2vec_format( "google_w2v_300.bin" , binary=True )
 fsttext=gensim.models.KeyedVectors.load_word2vec_format( "google_w2v_300.bin" , binary=True )
     #gensim.models.KeyedVectors.load_word2vec_format("/Volumes/MacPassport/PycharmProjects/crawl-300d-2M-subword/crawl-300d-2M-subword.vec")
 
-from nltk.tokenize import TweetTokenizer as TweetTokenizer
-from nltk.corpus import stopwords
-import random as rn
-import nltk
 nltk.download('stopwords')
 stop_words = set ( stopwords.words ( 'english' ) )
 numUs = len(listaIds)
@@ -206,18 +209,13 @@ for tweetsUser in matrixTweets:
 matrixTweets = None
 fsttext = None
 
-import numpy as np
 matrixTweetsEmb = np.array(matrixTweetsEmb)
 print(matrixTweetsEmb.shape)
 
 # joblib.dump(matrixTweetsEmb,filename='/Volumes/MacPassport/PycharmProjects/matrixTweetsEmb_FAST2.dump')
-#np.save("/Volumes/MacPassport/PycharmProjects/matrix.dump",matrixTweetsEmb)
-import tensorflow as tf
+# np.save("/Volumes/MacPassport/PycharmProjects/matrix.dump",matrixTweetsEmb)
 
-from keras.layers import *
-from keras.models import Sequential
-from keras import backend as K
-#K.set_floatx('float16')
+# K.set_floatx('float16')
 
 model = Sequential()
 model.add(Conv2D(200,(5,5), activation ='relu', input_shape=(100,50,300)))
@@ -239,14 +237,11 @@ le =  ce.OneHotEncoder(return_df=False, impute_missing=False, handle_unknown="ig
 training_classes = le.fit_transform(listaClasses)
 print(le.category_mapping)
 
-from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(matrixTweetsEmb,listaClasses, test_size=0.10, random_state=891)
 fsttext = None
 
 y_test = le.transform(y_test)
 
-from  sklearn.metrics  import classification_report
-from keras.callbacks import Callback
 class MyCallBack(Callback):
     def __init__(self,verbose=0):
 
@@ -283,10 +278,6 @@ callbacks_list = [
 
 model.compile ( loss='categorical_crossentropy' , optimizer='adam' , metrics=['accuracy'] )
 
-from sklearn.model_selection import train_test_split, StratifiedKFold
-
-
-
 folds = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=7654).split(X_train,y_train))
 X_tr = []
 y_tr = []
@@ -307,7 +298,7 @@ for j , (train_idx , val_idx) in enumerate ( folds ):
 
 
 predicted = model.predict ( X_test )
-
+# The number of accounts that autonomously publish contents on the web is growing fast, and it is very common to encounter them, especially on social networks. They are mostly used to post ads, false information, and scams that a user might run into. Such an account is called bot, an abbreviation of robot (a.k.a. social bots, or sybil accounts). In order to support the end user in deciding where a social network post comes from, bot or a real user, it is essential to automatically identify these accounts accurately and notify the end user in time. In this work, we present a model of classification of social network accounts in humans or bots starting from a set of one hundred textual contents that the account has published, in particular on Twitter platform. When an account of a real user has been iden- tified, we performed an additional step of classification to carry out its gender. The model was realized through a combination of convolutional and dense neural networks on textual data represented by word embedding vectors. Our architec- ture was trained and evaluated on the data made available by the PAN Bots and Gender Profiling challenge at CLEF 2019, which provided annotated data in both English and Spanish. Considered as the evaluation metric the accuracy of the sys- tem, we obtained a score of 0.9182 for the classification Bot vs. Humans, 0.7973 for Male vs. Female on the English language. Concerning the Spanish language, similar results were obtained. A score of 0.9156 for the classification Bot vs. Hu- mans, 0.7417 for Male vs. Female, has been earned. We consider these results encouraging, and this allows us to propose our model as a good starting point for future researches about the topic when no other descriptive details about the ac- count are available. In order to support future development and the replicability of results, the source code of the proposed model is available on the following GitHub repository: https://github.com/marcopoli/HumanOrBot_try_to_guess
 test = [ '0' ] * len ( X_test )
 i = 0
 for cl in predicted:

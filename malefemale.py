@@ -1,11 +1,11 @@
-
 import os
-os.listdir()
-pathEn = "/Users/kram/Downloads/botOrNot-en_es/en"
-
+import time
 import pandas as pd
 import xml.etree.ElementTree as ET
 import io
+
+os.listdir()
+pathEn = "/Users/kram/Downloads/botOrNot-en_es/en"
 testfile = "/Users/kram/Downloads/botOrNot-en_es/en/1a5b808546838869bc39cebdbad951e3.xml"
 
 def iter_docs(author):
@@ -21,10 +21,7 @@ xml_data = open(testfile, "r") # Opening the text file
 etree = ET.parse(xml_data) # Create an ElementTree object 
 df = pd.DataFrame(list(iter_docs(etree.getroot()))) #Append the info to a pandas dataframe
 
-
 filename = testfile.split("/")[-1].split(".")[0]
-
-import time
 
 # Creating empty dataframe
 dataEn = pd.DataFrame()

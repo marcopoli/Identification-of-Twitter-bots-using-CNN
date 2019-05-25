@@ -1,11 +1,8 @@
-import requests
 import configparser
 import TwitterAPI
 import sys
 import pandas as pd
 import numpy as np
-
-# In[2]:
 
 def get_census_names():
     males = pd.read_csv("male_es.txt",header=None,names=["Name"])
@@ -17,25 +14,18 @@ def get_census_names():
     return male_names, female_names
 
 
-
 male_names, female_names = get_census_names()
 
-
-
 print('Number of Male Names:', len(male_names))
-
 print('Number of Female Names:', len(female_names))
-
-
 print('male name sample:', list(male_names[:5]))
-
 print('female name sample:', list(female_names[:5]))
 
-
 def get_twitter(config_file):
+    token1, token2, token3, token4 = ''
     config = configparser.ConfigParser()
     config.read(config_file)
-    twitter = TwitterAPI.TwitterAPI('LZVpXdNveTI00no69FNpGbrzd','hgdgxYYoJJcodTvDj80lEtoetfv5y0c0k4EbYyzVDn0rOjJ3Uq','867780701483024385-xWX3RuXhNraSpA7ljrYQ18p6EUSL6Y3','IamHXMzX85Ji31tdNNFusiog7JJLKTTshkCqCQEBAW41R')
+    twitter = TwitterAPI.TwitterAPI(token1, token2, token3, token4)
     return twitter
 
 twitter = get_twitter('twitter.cfg')
@@ -47,11 +37,13 @@ def get_first_name(tweet):
         if len(parts) > 0:
             return parts[0].lower()
 
+
 def get_first_uid(tweet):
     if 'user' in tweet and 'id_str' in tweet['user']:
         parts = tweet['user']['id_str'].split()
         if len(parts) > 0:
             return parts[0]
+
 
 def get_first_text(tweet):
     if 'text' in tweet:

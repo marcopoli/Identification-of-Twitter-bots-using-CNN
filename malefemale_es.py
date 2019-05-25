@@ -1,11 +1,9 @@
-
 import os
-
-pathEn = "/Users/kram/Downloads/botOrNot-en_es/es"
-
 import pandas as pd
 import xml.etree.ElementTree as ET
 import io
+
+pathEn = "/Users/kram/Downloads/botOrNot-en_es/es"
 
 def iter_docs(author):
     '''This function extracts the text and the language from the XML'''
