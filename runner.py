@@ -1,5 +1,20 @@
+import os
+import gc
 import sys
-'''Acquisizione Parametri'''
+import keras
+import time
+import gensim
+import shutil
+import numpy as np
+import random as rn
+import pandas as pd
+from nltk.corpus import stopwords
+import xml.etree.ElementTree as ET
+from ekphrasis.dicts.emoticons import emoticons
+from ekphrasis.classes.preprocessor import TextPreProcessor
+from ekphrasis.classes.tokenizer import SocialTokenizer
+
+'''Parameter acquisition'''
 outputPath = str(sys.argv[1])
 inputPath = str(sys.argv[2])
 print(outputPath)
@@ -7,9 +22,6 @@ print(inputPath)
 
 '''''Bot or not on English DATA'''
 def generateBotEn(outputPath, inputPath):
-    import os
-    import pandas as pd
-    import xml.etree.ElementTree as ET
     ####[{'col': 0, 'mapping': [('human', 1), ('bot', 2)]}]####
     pathEn = inputPath+"/en"
     w2v = "/media/data/crawl-300d-2M-subword.vec"
@@ -17,8 +29,7 @@ def generateBotEn(outputPath, inputPath):
     human_dir= outputPath+"/toDoHuman/listHumans.csv"
     results_dir = outputPath+"/en/"
 
-    import keras
-    model=keras.models.load_model(model_bh)
+    model = keras.models.load_model(model_bh)
     model.summary()
 
     def iter_docs(author):
@@ -30,8 +41,6 @@ def generateBotEn(outputPath, inputPath):
             doc_dict['data'] = doc.text
             yield doc_dict
 
-
-    import time
 
     # Creating empty dataframe
     dataEn = pd.DataFrame()
@@ -63,7 +72,7 @@ def generateBotEn(outputPath, inputPath):
     end = time.time()
     print("Total running time is", end - start)
 
-    '''Creo la litsa degli ID, delle classi e dei tweets pr ogni ID'''
+    '''Creating the lists of IDs, classes and tweets for each ID'''
     listaIds =[]
     matrixTweets = []
     print(dataEn.shape)
@@ -80,15 +89,9 @@ def generateBotEn(outputPath, inputPath):
             matrixTweets[listaIds.index(id)] = ls
 
     print(len(listaIds))
-    import gc
     dataEn = None
     target = None
     gc.collect()
-
-
-    from ekphrasis.dicts.emoticons import emoticons
-    from ekphrasis.classes.preprocessor import TextPreProcessor
-    from ekphrasis.classes.tokenizer import SocialTokenizer
 
     text_processor = TextPreProcessor (
         # terms that will be normalized
@@ -103,12 +106,7 @@ def generateBotEn(outputPath, inputPath):
         tokenizer=SocialTokenizer(lowercase=True).tokenize,
         dicts=[ emoticons ]
     )
-    import numpy as np
-    from nltk.corpus import stopwords
-    import random as rn
 
-
-    import gensim
     google_300 = gensim.models.KeyedVectors.load_word2vec_format(w2v)
     stop_words = set(stopwords.words('english'))
 
@@ -182,19 +180,16 @@ def generateBotEn(outputPath, inputPath):
             embTweetsUser = None
             gc.collect()
 
-
         print(matrixTweetsEmb.shape)
 
-
         '''Num Utenti x Num Tweets x Num MaxTokens x Dim Embedding'''
-        import numpy as np
         gc.collect()
         predicted = model.predict(matrixTweetsEmb)
 
         res = [ '0' ] * len ( matrixTweetsEmb )
         i = 0
         for cl in predicted:
-            res[ i ] = str ( np.argmax ( cl ) )
+            res[i] = str ( np.argmax ( cl ) )
             i += 1
 
         def save_to_xml ( results , ids ):
@@ -232,7 +227,6 @@ def generateBotEn(outputPath, inputPath):
 '''Male or Female function on English DATA'''
 def generateMFEn(outputPath, inputPath):
 
-    import os
     ####[{'col': 0, 'mapping': [('human', 1), ('bot', 2)]}]####
 
     pathEn = inputPath+"/en"
@@ -241,10 +235,6 @@ def generateMFEn(outputPath, inputPath):
     model_fm = '/media/data/weights.04-0.48041_0.8479.fasttext_female_male.hdf5'
     results_path = outputPath+"/en/"
 
-    import pandas as pd
-    import xml.etree.ElementTree as ET
-
-    import keras
     model = keras.models.load_model ( model_fm )
     model.summary ( )
 
@@ -256,8 +246,6 @@ def generateMFEn(outputPath, inputPath):
             doc_dict.update(doc.attrib)
             doc_dict['data'] = doc.text
             yield doc_dict
-
-    import time
 
     # Creating empty dataframe
     dataEn = pd.DataFrame()
@@ -309,16 +297,10 @@ def generateMFEn(outputPath, inputPath):
             matrixTweets[listaIds.index(id)] = ls
 
     print(len(listaIds))
-    import gc
     dataEn = None
     target = None
     mergedEnData= None
     gc.collect()
-
-
-    from ekphrasis.dicts.emoticons import emoticons
-    from ekphrasis.classes.preprocessor import TextPreProcessor
-    from ekphrasis.classes.tokenizer import SocialTokenizer
 
     text_processor = TextPreProcessor (
         # terms that will be normalized
@@ -334,14 +316,7 @@ def generateMFEn(outputPath, inputPath):
         dicts=[ emoticons ]
     )
 
-
-    import gensim
     google_300 = gensim.models.KeyedVectors.load_word2vec_format(w2v)
-
-
-    import numpy as np
-    from nltk.corpus import stopwords
-    import random as rn
     stop_words = set(stopwords.words('english'))
 
     numFolds = len( matrixTweets ) // 500
@@ -425,7 +400,7 @@ def generateMFEn(outputPath, inputPath):
             res[ i ] = str ( np.argmax ( cl ) )
             i += 1
 
-        import shutil
+
         def save_to_xml(results,ids):
                 path = human_file
 
@@ -464,9 +439,8 @@ def generateMFEn(outputPath, inputPath):
         gc.collect()
 
 
-'''Bot or Not on Spanish DATA'''
+'''Bot or Not on Spanish data'''
 def generateBotEs(outputPath, inputPath):
-    import os
     ####[{'col': 0, 'mapping': [('human', 1), ('bot', 2)]}]####
 
     pathEn = inputPath+"/es"
@@ -475,12 +449,8 @@ def generateBotEs(outputPath, inputPath):
     human_dir= outputPath+"/toDoHumanEs/listHumans.csv"
     results_dir = outputPath+"/es/"
 
-    import keras
     model = keras.models.load_model ( model_bh )
     model.summary ( )
-
-    import pandas as pd
-    import xml.etree.ElementTree as ET
 
     def iter_docs(author):
         '''This function extracts the text and the language from the XML'''
@@ -490,8 +460,6 @@ def generateBotEs(outputPath, inputPath):
             doc_dict.update(doc.attrib)
             doc_dict['data'] = doc.text
             yield doc_dict
-
-    import time
 
     # Creating empty dataframe
     dataEn = pd.DataFrame()
@@ -540,15 +508,10 @@ def generateBotEs(outputPath, inputPath):
             matrixTweets[listaIds.index(id)] = ls
 
     print(len(listaIds))
-    import gc
     dataEn = None
     target = None
     mergedEnData= None
     gc.collect()
-
-    from ekphrasis.dicts.emoticons import emoticons
-    from ekphrasis.classes.preprocessor import TextPreProcessor
-    from ekphrasis.classes.tokenizer import SocialTokenizer
 
     text_processor = TextPreProcessor (
         # terms that will be normalized
@@ -564,13 +527,7 @@ def generateBotEs(outputPath, inputPath):
         dicts=[ emoticons ]
     )
 
-    import gensim
     google_300 = gensim.models.KeyedVectors.load_word2vec_format(w2v)
-
-
-    import numpy as np
-    from nltk.corpus import stopwords
-    import random as rn
     stop_words = set(stopwords.words('spanish'))
 
     numFolds = len ( matrixTweets ) // 500
@@ -689,7 +646,6 @@ def generateBotEs(outputPath, inputPath):
 
 '''Male or Female function on Spanish DATA'''
 def generateMFEs ( outputPath , inputPath ):
-    import os
     ####[{'col': 0, 'mapping': [('human', 1), ('bot', 2)]}]####
 
     pathEn = inputPath + "/es"
@@ -698,12 +654,8 @@ def generateMFEs ( outputPath , inputPath ):
     model_fm = '/media/data/MF.weights.06-0.70314-0.68000_fasttext_esp_hb.hdf5'
     results_path = outputPath + "/es/"
 
-    import keras
     model = keras.models.load_model ( model_fm )
     model.summary ( )
-
-    import pandas as pd
-    import xml.etree.ElementTree as ET
 
     def iter_docs ( author ):
         '''This function extracts the text and the language from the XML'''
@@ -713,8 +665,6 @@ def generateMFEs ( outputPath , inputPath ):
             doc_dict.update ( doc.attrib )
             doc_dict[ 'data' ] = doc.text
             yield doc_dict
-
-    import time
 
     # Creating empty dataframe
     dataEn = pd.DataFrame ( )
@@ -767,15 +717,10 @@ def generateMFEs ( outputPath , inputPath ):
 
     print ( len ( listaIds ) )
 
-    import gc
     dataEn = None
     target = None
     mergedEnData = None
     gc.collect ( )
-
-    from ekphrasis.dicts.emoticons import emoticons
-    from ekphrasis.classes.preprocessor import TextPreProcessor
-    from ekphrasis.classes.tokenizer import SocialTokenizer
 
     text_processor = TextPreProcessor (
         # terms that will be normalized
@@ -791,12 +736,7 @@ def generateMFEs ( outputPath , inputPath ):
         dicts=[ emoticons ]
     )
 
-    import gensim
     google_300 = gensim.models.KeyedVectors.load_word2vec_format ( w2v )
-
-    import numpy as np
-    from nltk.corpus import stopwords
-    import random as rn
     stop_words = set ( stopwords.words ( 'english' ) )
 
     numFolds = len ( matrixTweets ) // 500
@@ -879,7 +819,6 @@ def generateMFEs ( outputPath , inputPath ):
             res[ i ] = str ( np.argmax ( cl ) )
             i += 1
 
-        import shutil
         # [{'col': 0, 'mapping': [('female', 1), ('male', 2)]}]
         def save_to_xml ( results , ids ):
             path = human_file
@@ -919,7 +858,6 @@ def generateMFEs ( outputPath , inputPath ):
 
 
 '''Esecuzione Scripts'''
-import gc
 botEn = generateBotEn(outputPath,inputPath)
 botEn = None
 gc.collect()
