@@ -1,10 +1,8 @@
-# Identification of bot accounts in Twitter using 2D CNNs on user-generated contents Notebook for PAN at CLEF 2019
+# Identification of bot accounts in Twitter using 2D CNNs on user-generated contents
 
-*Marco Polignano, Marco Giuseppe de Pinto, Pasquale Lops, and Giovanni Semeraro* 
+*Marco Polignano, Marco Giuseppe de Pinto* 
 
-*University of Bari ALDO MORO - Via E. Orabona 4, 70125, Bari, Italy*
-
-*marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it, pasquale.lops@uniba.it, giovanni.semeraro@uniba.it*
+*marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it*
 
 # Abstract
 
