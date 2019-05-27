@@ -36,7 +36,7 @@ In order to support future development and the replicability of results, the sou
 
 # Model
 
-![](https://github.com/marcopoli/Identification-of-Twitter-bots-using-CNN/blob/master/pictures/model.png)
+![](https://github.com/marcopoli/Identification-of-Twitter-bots-using-CNN/blob/master/pictures/model_n.png)
 
 # Dataset
 
