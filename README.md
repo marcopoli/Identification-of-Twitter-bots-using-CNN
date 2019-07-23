@@ -4,6 +4,8 @@
 
 *marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it*
 
+Full paper is available on [CEUR-WS.org](http://ceur-ws.org/Vol-2380/paper_95.pdf)
+
 # Abstract
 
 The number of accounts that autonomously publish contents on the web is growing fast, and it is very common to encounter them, especially on social networks. 
