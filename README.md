@@ -1,6 +1,6 @@
 # Identification of bot accounts in Twitter using 2D CNNs on user-generated contents
 
-*Marco Polignano, Marco Giuseppe de Pinto* 
+*Marco Polignano, Marco Giuseppe de Pinto, Pasquale Lops, Giovanni Semeraro* 
 
 *marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it, pasquale.lops@uniba.it, giovanni.semeraro@uniba.it*
 
