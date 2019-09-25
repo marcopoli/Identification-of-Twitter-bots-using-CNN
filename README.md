@@ -2,7 +2,7 @@
 
 *Marco Polignano, Marco Giuseppe de Pinto* 
 
-*marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it*
+*marco.polignano@uniba.it, marcogiuseppe.depinto@uniba.it, pasquale.lops@uniba.it, giovanni.semeraro@uniba.it*
 
 Full paper is available on [CEUR-WS.org](http://ceur-ws.org/Vol-2380/paper_95.pdf)
 
