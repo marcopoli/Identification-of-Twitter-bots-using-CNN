@@ -46,3 +46,15 @@ The dataset is under copyright of the PAN 2019 challenge.
 It can be used only for research purposes citing the owner: https://pan.webis.de/clef19/pan19-web/author-profiling.html
 
 Download link: https://my.pcloud.com/publink/show?code=XZ2kIK7ZWtVHRwpxKVb0VYjLM6MewkXWrMn7
+
+<br><br><b>Cite us:</b>
+```
+@CONFERENCE{Polignano2019,
+author={Polignano, M. and De Pinto, M.G. and Lops, P. and Semeraro, G.},
+title={Identification of Bot Accounts in Twitter Using 2D CNNs on User-generated Contents Notebook for PAN at CLEF 2019},
+journal={CEUR Workshop Proceedings},
+year={2019},
+volume={2380},document_type={Conference Paper}
+}
+
+```
